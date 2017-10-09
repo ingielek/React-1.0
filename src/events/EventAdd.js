@@ -4,7 +4,7 @@ const EventAdd = (props) => {
     return (
         <form onSubmit={props.onFormSubmit}>
             <input id="name" type="text" placeholder="nazwa..." value={props.name} onChange={props.onFieldChange.bind(this, 'newName')}/>
-            <label style={props.nameValid ? {display: 'none'} : {display: 'inline'}} htmlFor="name">Pole jest wymagane!</label><br />
+            <label style={props.gnameValid ? {display: 'none'} : {display: 'inline'}} htmlFor="name">Pole jest wymagane!</label><br />
             <input id='place'type="text" placeholder="miejsce..." value={props.place} onChange={props.onFieldChange.bind(this, 'newPlace')}/>
             <label style={props.placeValid ? {display: "none"} : {display: 'inline'} } htmlFor="place">Pole jest wymagane!</label><br />
             <input id='date'type="text" placeholder="data..." value={props.date} onChange={props.onFieldChange.bind(this, 'newDate')}/>

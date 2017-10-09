@@ -1,16 +1,12 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import EventItem from "./EventItem";
+import events from '../data/events';
+import EventItem from './EventItem';
 import EventFilters from './EventFilters';
-import EventAdd from './EventAdd'
-import fetch from 'isomorphic-fetch';
-import Loader from '../Common/Loader';
-
+import EventAdd from './EventAdd';
 class Events extends React.Component {
-    constructor(props){
+    constructor(props) {
         super(props);
         this.state = {
-            isLoading: true,
             events: [],
             filter: '',
             newName: '',
@@ -21,36 +17,29 @@ class Events extends React.Component {
             newDateValid: false,
             newTime: '',
             newTimeValid: false
-
         };
-
-        this.onClick = this.onClick.bind(this);
     }
 
-    componentDidMount(){
-        fetch('http://frontendinsights.com/events.json')
-            .then(response => response.json())
-            .then(data => {
-                this.setState({
-                    events: data,
-                    isLoading: false
-                });
-            })
+    componentDidMount() {
+        this.setState({
+            events
+        });
     }
 
-    onClick(event) {
+    onClearClicked(event) {
         event.preventDefault();
 
         this.setState({ events: [] });
     }
 
-    onDeleteClick(itemId, event){
+    onDeleteClicked(id, event) {
         event.preventDefault();
 
-        const filteredArray = this.state.events.filter(item => item.id !== itemId);
+        const filteredArray = this.state.events.filter(item => item.id !== id);
+
         this.setState({
             events: filteredArray
-        })
+        });
     }
 
     onFilterChange(event) {
@@ -58,10 +47,30 @@ class Events extends React.Component {
 
         this.setState({
             filter: value
-        })
+        });
+    };
+
+    onEventFieldChange(field, event) {
+        const value = event.currentTarget.value;
+        switch (field) {
+            case 'name':
+                this.setState({ newName: value, newNameValid: value.length > 0 });
+                break;
+            case 'place':
+                this.setState({ newPlace: value, newPlaceValid: value.length > 0 });
+                break;
+            case 'date':
+                this.setState({ newDate: value, newDateValid: value.length > 0 });
+                break;
+            case 'time':
+                this.setState({ newTime: value, newTimeValid: value.length > 0 });
+                break;
+            default:
+                break;
+        }
     }
 
-    onFormSubmit(event){
+    onEventAdd(event) {
         event.preventDefault();
 
         const {
@@ -69,12 +78,9 @@ class Events extends React.Component {
             newName,
             newPlace,
             newDate,
-            newTime,
-            newNameValid,
-            newPlaceValid,
-            newDateValid,
-            newTimeValid
+            newTime
         } = this.state;
+
         const maxId = Math.max(...events.map(item => item.id));
 
         events.push({
@@ -85,39 +91,29 @@ class Events extends React.Component {
             time: newTime
         });
 
-        if (newNameValid && newPlaceValid && newDateValid && newTimeValid){
-            this.setState({
-                events: events
-            });
-        }
-    }
-
-
-    onFieldChange(field, event) {
-        const value = event.currentTarget.value;
-
         this.setState({
-            [field]: value,
-            [field + 'Valid']: value.length > 0
-        });
+            events
+        })
     }
 
-    render(){
-        return(
+    render() {
+        return (
             <div>
-                <EventFilters filter={this.state.filter} onFilterChange={this.onFilterChange.bind(this)}/>
-                <Loader isLoading={this.state.isLoading}>
-            <ul>
-                {this.state.events.map(item => {
-                    const date = new Date(item.date);
-                    if (date >= Date.now() && item.name.indexOf(this.state.filter) > -1) {
-                        return <EventItem item={item} onDeleteClick={this.onDeleteClick.bind(this)}/>
-                    }
-                    return null
-                })}
-            </ul>
-                </Loader>
-            <button onClick={this.onClick.bind(this)}>Wyczyść</button>
+                <EventFilters onFilterChange={this.onFilterChange.bind(this)} />
+                <ul>
+                    {this.state.events.map(item => {
+                        const date = new Date(item.date);
+
+                        if (date >= Date.now() && item.name.indexOf(this.state.filter) > -1) {
+                            return (
+                                <EventItem {...item} key={item.id} onDeleteClicked={this.onDeleteClicked.bind(this)} />
+                            );
+                        }
+
+                        return null;
+                    })}
+                </ul>
+                <button onClick={this.onClearClicked.bind(this)}>Wyczyść</button>
                 <EventAdd name={this.state.newName}
                           place={this.state.newPlace}
                           date={this.state.newDate}
@@ -126,14 +122,12 @@ class Events extends React.Component {
                           placeValid={this.state.newPlaceValid}
                           dateValid={this.state.newDateValid}
                           timeValid={this.state.newTimeValid}
-                          onFieldChange={this.onFieldChange.bind(this)}
-                          onFormSubmit={this.onFormSubmit.bind(this)}/>
+                          onFieldChange={this.onEventFieldChange.bind(this)}
+                          onFormSubmit={this.onEventAdd.bind(this)}
+                />
             </div>
         );
     }
-}
- Events.propTypes ={
-    events: PropTypes.array.isRequired
- };
+};
 
 export default Events;
